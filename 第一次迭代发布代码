@@ -1,0 +1,239 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Net;
+
+namespace download
+{
+    public class Download
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// 
+        private static Download dl;
+        private Download()
+        {
+        }
+
+        public static Download getDownload()
+        {
+            if (dl == null)
+                dl = new Download();
+            return dl;
+        }
+
+        public void mainFun()
+        {
+            downloadHtmlSource("http://fund.eastmoney.com/fund.html",
+                @"C:\data\funds.htm");
+            string strHtml = getSpecifiedSource(@"C:\data\funds.htm", @"<div id=""tableDiv"">",
+                @"<div class=""space6""></div>");
+            strHtml = RemoveHtmlTags(ref strHtml);
+            writeFundToFile(ref strHtml, @"C:\data\fundMainInfo.txt");
+            //getFundHomePage(@"C:\data\fundMainInfo.txt");
+
+            Console.ReadLine();
+        }
+
+
+        /// <summary>
+        /// Download html source code from specified URL
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="outputFilePath"></param>
+        public void downloadHtmlSource(string url, string outputFilePath)
+        {
+            try
+            {
+                WebClient wc = new WebClient();
+                wc.Credentials = CredentialCache.DefaultCredentials;
+                //wc.Encoding = System.Text.Encoding.GetEncoding("gb2312");
+                Byte[] pageData = wc.DownloadData(url);
+                string pageHtml = Encoding.GetEncoding("GB2312").GetString(pageData);
+                //string pageHtml = wc.DownloadString(url);
+                using (StreamWriter sw = new StreamWriter(outputFilePath))
+                {
+                    sw.Write(pageHtml);
+                    sw.Close();
+                }
+
+                Console.WriteLine("Download completed!");
+                //               Console.ReadLine();
+
+            }
+            catch (WebException webEx)
+            {
+                Console.WriteLine(webEx.Message.ToString());
+            }
+        }
+
+
+        /// <summary>
+        /// Do the main job
+        /// </summary>
+        /// <param name="htmlFilePath"></param>
+        public string getSpecifiedSource(string htmlFilePath, string begin, string end)
+        {
+            try
+            {
+                WebRequest myWebRequest = WebRequest.Create(htmlFilePath);
+                WebResponse myWebResponse = myWebRequest.GetResponse();
+                Stream myStream = myWebResponse.GetResponseStream();
+                Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
+                StreamReader myStreamReader = new StreamReader(myStream, encode);
+                string strHtml = myStreamReader.ReadToEnd();
+                myWebResponse.Close();
+
+                Regex regex = new Regex(begin);
+                int indexStart = regex.Match(strHtml).Index;
+                strHtml = strHtml.Substring(indexStart);
+
+                regex = new Regex(end);
+                int indexEnd = regex.Match(strHtml).Index;
+                strHtml = strHtml.Substring(0, indexEnd + end.Length);
+
+
+                return strHtml;
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Remove html tags
+        /// </summary>
+        /// <param name="strHtml"></param>
+        /// <returns></returns>
+        public string RemoveHtmlTags(ref string strHtml)
+        {
+            // Regex r = new Regex("[</tr>|</br>|<tr/>|<br/>]");
+            //string strOutput = r.Replace(strHtml, "\n");
+
+            Regex r = new Regex(@"<(.|\n|)+?>|&nbsp;");
+            string strOutput = r.Replace(strHtml, " ");
+            strOutput = strOutput.Replace("<", "&lt;");
+            strOutput = strOutput.Replace(">", "&gt;");
+            r = new Regex(@"^\n\s+|\r|\t");
+            strOutput = r.Replace(strOutput, " ");
+            strOutput.Trim();
+            //  r = new Regex(@"\n");
+            // strOutput = r.Replace(strOutput, " ");
+            //   strOutput.Trim();
+
+            return strOutput;
+        }
+
+        /// <summary>
+        /// Write all code and name of funds to file
+        /// </summary>
+        /// <param name="strhtml"></param>
+        /// <param name="outputFilePath"></param>
+        public void writeToFile(ref string str, string ouputFilePath)
+        {
+            StreamWriter sw = new StreamWriter(ouputFilePath);
+            sw.Write(str);
+
+            sw.Close();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strhtml"></param>
+        /// <param name="outputFilePath"></param>
+        public void writeFundToFile(ref string strhtml, string outputFilePath)
+        {
+            string filter = @"[\d]+[\s]+\d{6}[\s|\S]*?\s{5,}";
+            Regex regex = new Regex(filter);
+            string strMatch = null;
+            StreamWriter sw = new StreamWriter(outputFilePath);          
+            Regex r = new Regex(@"\s+");
+            while (regex.IsMatch(strhtml))
+            {                      
+                strMatch = regex.Match(strhtml).ToString();               
+                strhtml = strhtml.Substring(regex.Match(strhtml).Index + strMatch.Length);
+                strMatch = Regex.Replace(strMatch, @"\s+", " ");
+                sw.WriteLine(strMatch);
+            }
+            sw.Close();
+            Console.ReadLine();
+        }
+
+        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strHtml"></param>
+        /// <returns></returns>
+        private string getFundMainInfo(ref string strHtml)
+        {
+            string filter = @"<div class=""fund_intro_new"">[\s|\S]+<div class=""intro_newbg"">";
+            Regex regex = new Regex(filter);
+            string strTmp = regex.Match(strHtml).ToString();
+            strTmp = RemoveHtmlTags(ref strTmp);
+
+
+            return strTmp;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strHtml"></param>
+        /// <returns></returns>    
+        //private string getShouyi(ref string strHtml)
+        //{
+        //    string filter = @"<div id=""jdzfTab0"" class=""jdzfnew "">[\s|\S]+<div id=""jdzfTab1"" class=""jdzfnew hide "">";
+        //    Regex regex = new Regex(filter);
+        //    string strTmp = regex.Match(strHtml).ToString();
+        //    strTmp = RemoveHtmlTags(ref strTmp);
+
+        //    return strTmp;
+        //}
+
+       
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jjjzURL"></param>
+        /// <param name="jjjzFile"></param>
+        public void downloadjjjz(string jjjzURL,string jjjzFile)
+        {
+            downloadHtmlSource(jjjzURL, "C:\\data\\jjjz.htm");
+            string str = getSpecifiedSource("C:\\data\\jjjz.htm",@"<div class=""auto"">", @"</table>"); ;
+            str = RemoveHtmlTags(ref str);
+            str = str.Trim();
+            writeToFile(ref str, jjjzFile);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fundCode"></param>
+        /// 
+
+
+        public void downloadProfitInfo()
+        {
+            downloadHtmlSource("http://data.cnfund.cn/FundOrder/",
+                "C:\\data\\profit.html");
+            string str = getSpecifiedSource("C:\\data\\profit.html", "<td rowspan=\"2\" class=\"fundbgwhite bgF3F7FA\" style=\"width:30px;\">序号</td>",
+                @"<input type=""hidden"" name=""HiddenField1"" id=""HiddenField1"" value=""-1"" />");
+            str = RemoveHtmlTags(ref str);
+            Console.ReadLine();
+        }
+        
+   
+    }
+}
