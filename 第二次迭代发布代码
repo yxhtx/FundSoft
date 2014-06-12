@@ -1,0 +1,483 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.IO;
+using download;
+using System.Web;
+using System.Drawing.Imaging;
+using Algorithm;
+
+namespace WIndows
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            Download.getDownload().mainFun();
+         
+            listView1.View = View.Details;
+            listView1.GridLines = true;
+            listView1.HoverSelection = true;
+            listView1.FullRowSelect = true;
+            listView1.MultiSelect = false;
+            
+            listView1.Columns.Add("序号", 50);
+            listView1.Columns.Add("基金代码", 80);
+            listView1.Columns.Add("基金简称", 180);
+            listView1.Columns.Add("今日单位净值", 80);
+            listView1.Columns.Add("今日累计净值", 80);
+            listView1.Columns.Add("上日单位净值", 80);
+            listView1.Columns.Add("上日累计净值", 80);
+            listView1.Columns.Add("日增长值", 80);
+            listView1.Columns.Add("日增长率", 80);
+            listView1.Columns.Add("申购状态", 80);
+            listView1.Columns.Add("赎回状态", 80);
+            listView1.Columns.Add("备注");
+            listView1.Columns.Add("优惠费率");
+
+            listView2.View = View.Details;
+            listView2.GridLines = true;
+            listView2.HoverSelection = true;
+            listView2.FullRowSelect = true;
+            listView2.MultiSelect = false;
+            listView2.Columns.Add("日期",100);
+            listView2.Columns.Add("单位净值", 70);
+            listView2.Columns.Add("累计净值", 70);
+            listView2.Columns.Add("日增长值", 70);
+            listView2.Columns.Add("日增长率", 70);
+            listView2.Columns.Add("累计收益率", 80);
+           
+            control_output_listview1(@"c:\data\fundMainInfo.txt");
+
+            Download.getDownload().downloadjjjz("http://data.cnfund.cn/FundData660005.html", "C:\\data\\jjjz.txt");
+            control_output_listview2(@"C:\data\jjjz.txt");
+
+            //string s = listView1.Items[listView1.SelectedItems[0].Index].SubItems[1].Text;
+
+            /*string str = listView2.Items[0].SubItems[0].Text + "\n";
+            str += "基金名称：" + "农银中小盘" + "\n";
+            str += "基金代码：" + "660005" + "\n";
+            str += "今日单位净值：" + listView2.Items[0].SubItems[1].Text + "\n";
+            str += "日增长率：" + listView2.Items[0].SubItems[4].Text + "\n";
+            str += "累计收益率：" + listView2.Items[0].SubItems[5].Text + "\n";
+            richTextBox1.Text = str;
+            */
+
+            output_richTextBox1("660005", "农银中小盘");
+
+            CreateImage();
+            pictureBox1.Load("C:\\aa.jpg");
+        }
+      
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filePath"></param>
+        private void control_output_listview1(string filePath)
+        {
+            StreamReader sr = new StreamReader(filePath);
+            while (!sr.EndOfStream)
+            {
+                //richTextBox1.AppendText(sr.ReadLine() + '\n');
+                string strLine = sr.ReadLine();
+                string[] strArray = strLine.Split(' ');               
+                ListViewItem lvi = new ListViewItem();
+                lvi.Text = strArray[0];
+                lvi.Font = new Font("宋体",10);
+              //  lvi.BackColor = System.Drawing.Color.WhiteSmoke;
+                for (int i = 1; i != strArray.Length; i++)
+                {
+                    if (i == 3 || i == 4)
+                        continue;
+                    lvi.SubItems.Add(strArray[i]);
+                }
+
+                listView1.Items.Add(lvi); 
+                              
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filePath"></param>
+        private void control_output_listview2(string filePath)
+        {
+            StreamReader sr = new StreamReader(filePath);
+            string strLine = "";
+            while(!sr.EndOfStream)
+            {
+                ListViewItem lvi = new ListViewItem();
+                strLine = sr.ReadLine().Replace(" ","");
+                lvi.Text = strLine;
+                lvi.Font = new Font("宋体", 10);
+                for(int i = 0;i <= 7;i++)
+                {
+                    if (i >= 5)
+                    {
+                        strLine = sr.ReadLine();
+                    }
+                    else
+                    {
+                        strLine = sr.ReadLine();
+                        strLine = strLine.Replace(" ", "");
+                        lvi.SubItems.Add(strLine);
+                    }
+                }
+                listView2.Items.Add(lvi);
+            }
+            sr.Close();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filePath"></param>
+        private void control_output_listview2_changed(string filePath)
+        {
+            StreamReader sr = new StreamReader(filePath);
+            string strLine = "";
+            int j = 0;
+            while (!sr.EndOfStream && j < listView2.Items.Count)
+            {
+                //ListViewItem lvi = new ListViewItem();
+                //strLine = sr.ReadLine().Replace(" ", "");
+                //lvi.Text = strLine;
+                //lvi.Font = new Font("宋体", 10);
+                //listView2.Items[j].SubItems[0].Text = strLine;
+                for (int i = 0; i <= 8; i++)
+                {
+                    if (i >= 6)
+                    {
+                        strLine = sr.ReadLine();
+                    }
+                    else
+                    {
+                        strLine = sr.ReadLine();
+                        strLine = strLine.Replace(" ", "");
+                        //lvi.SubItems.Add(strLine);
+                        listView2.Items[j].SubItems[i].Text = strLine;
+                    }
+                }
+                //listView2.Items.Add(lvi);
+                  j++;
+            }
+            sr.Close();
+        }        
+            
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int i;
+            string input = textBox1.Text;
+            for (i = 0; i < listView1.Items.Count; i++)
+            {
+                ListViewItem item = listView1.Items[i];
+                if (input == item.SubItems[1].Text ||
+                    input == item.SubItems[2].Text)
+                    break;
+  
+            }
+            if (i >= listView1.Items.Count)
+            { }
+
+            listView1.Items[i].Selected = true;
+            listView1.Items[i].EnsureVisible();
+            listView1.Items[i].BackColor = Color.LightBlue;
+                      
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void richTextBox1_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void listView1_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void listView1_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+          
+        }
+
+        private void listView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            
+        }
+
+        private void listView1_MouseClick(object sender, MouseEventArgs e)
+        {                       
+
+        }
+
+        private void listView1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //"净值日期 单位净值 累计净值 日增长率 日增长值 累计收益率 ";
+            string s = listView1.Items[listView1.SelectedItems[0].Index].SubItems[1].Text;
+            this.textBox1.Text = s;
+           
+            Download.getDownload().downloadjjjz("http://data.cnfund.cn/FundData" + s + ".html", "C:\\data\\jjjz.txt");
+            //listView2.Clear();
+
+    //        d.downloadFundinfo(s);
+            
+            listView2.BeginUpdate();
+            control_output_listview2_changed("C:\\data\\jjjz.txt");
+            listView2.EndUpdate();
+
+            /*string str = listView2.Items[0].SubItems[0].Text + "\n";
+            str += "基金名称：" + listView1.Items[listView1.SelectedItems[0].Index].SubItems[2].Text + "\n";
+            str += "基金代码：" + s + "\n";
+            str += "今日单位净值：" + listView2.Items[0].SubItems[1].Text + "\n";
+            str += "日增长率：" + listView2.Items[0].SubItems[4].Text + "\n";
+            str += "累计收益率：" + listView2.Items[0].SubItems[5].Text + "\n";
+            richTextBox1.Text = str;*/
+
+            output_richTextBox1(s, listView1.Items[listView1.SelectedItems[0].Index].SubItems[2].Text);
+
+            CreateImage();
+            pictureBox1.Load("C:\\aa.jpg");
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fundCode"></param>
+        /// <param name="fundName"></param>
+        private void output_richTextBox1(string fundCode, string fundName)
+        {
+            string str = listView2.Items[0].SubItems[0].Text + "\n";
+            str += "基金名称：" + fundName + "\n";
+            str += "基金代码：" + fundCode + "\n";
+            str += "今日单位净值：" + listView2.Items[0].SubItems[1].Text + "\n";
+            str += "日增长率：" + listView2.Items[0].SubItems[4].Text + "\n";
+            str += "累计收益率：" + listView2.Items[0].SubItems[5].Text + "\n";
+            richTextBox1.Text = str;
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+   
+        /// <summary>
+        /// 
+        /// </summary>
+        private void CreateImage()
+        {
+
+            double[] jjjzArray = new double[listView2.Items.Count];
+            double[] ljjzArray = new double[listView2.Items.Count];
+            for (int j = 0; j != listView2.Items.Count; j++)
+            {
+                jjjzArray[j] = Convert.ToDouble(listView2.Items[j].SubItems[1].Text);
+                ljjzArray[j] = Convert.ToDouble(listView2.Items[j].SubItems[2].Text);
+            }
+            AlgorithmClass ac = new AlgorithmClass();
+            double min1 = ac.getMinOfArray(jjjzArray, listView2.Items.Count);
+            double min2 = ac.getMinOfArray(ljjzArray, listView2.Items.Count);
+
+            double max1 = ac.getMaxOfArray(jjjzArray, listView2.Items.Count);
+            double max2 = ac.getMaxOfArray(ljjzArray, listView2.Items.Count);
+
+            if (min1 > min2)
+                min1 = min2;
+            if (max1 < max2)
+                max1 = max2;
+            
+
+            int height = 240, width = 420;
+            Bitmap image = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(image);
+
+            try
+            {
+                
+                g.Clear(Color.WhiteSmoke);
+
+                Font font = new System.Drawing.Font("Arial", 9, FontStyle.Regular);
+                Font font1 = new System.Drawing.Font("宋体", 10, FontStyle.Regular);
+                Font font2 = new System.Drawing.Font("Arial", 8, FontStyle.Regular);
+                LinearGradientBrush brush = new LinearGradientBrush(
+                new Rectangle(0, 0, image.Width, image.Height), Color.DarkGray, Color.DarkGray, 0.1f, true);
+                g.FillRectangle(Brushes.WhiteSmoke, 0, 0, width, height);
+                Brush brush1 = new SolidBrush(Color.Black);
+                Brush brush2 = new SolidBrush(Color.SaddleBrown);
+
+           
+                g.DrawString("净值走势", font1, brush1, new PointF(50,15));
+                
+                g.DrawRectangle(new Pen(Color.Black), 0, 0, image.Width - 1, image.Height - 1);
+
+                Pen mypen = new Pen(brush, 0.1f);
+               
+                Pen mypen2 = new Pen(Color.Red, 2);
+                
+                int x = 36;
+                for (int i = 0; i < 8; i++)
+                {
+                    g.DrawLine(mypen, x, 40, x, 170);
+                    x = x + 48;
+                }
+                Pen mypen1 = new Pen(Color.Black, 2);
+                x = 36;
+                g.DrawLine(mypen1, x, 49, x, 170);
+
+                
+                int y = 53;
+                for (int i = 0; i < 10; i++)
+                {
+                    g.DrawLine(mypen, 36, y, 372, y);
+                    y = y + 13;
+                }
+                // y = 106;
+                g.DrawLine(mypen1, 36, y - 13, 372, y - 13);
+                
+                
+                String[] n = { "1", "2", "3", "4", "5", "6", "7" };
+                x = 27;
+                for (int i = 0; i < 7; i++)
+                {
+                    g.DrawString(n[i].ToString(), font, Brushes.Black, x, 179); 
+                    x = x + 46;
+                }
+
+                
+                double tmp = max1 - min1;
+                double tmp1 = tmp / 7.0;        
+                String[] m = { (max1 + tmp1).ToString("0.000"),
+                             max1.ToString("0.000"),(max1 - tmp1).ToString("0.000"),(max1 - tmp1 * 2.0).ToString("0.000"),
+                             (max1 - tmp1 * 3.0).ToString("0.000"),(max1 - tmp1 * 4.0).ToString("0.000"),
+                             (max1 - tmp1 * 5.0).ToString("0.000"),(max1 - tmp1 * 6.0).ToString("0.000"),
+                             (max1 - tmp1 * 7.0).ToString("0.000")
+                             };
+                
+                y = 47;
+                for (int i = 0; i < 9; i++)
+                {
+                    g.DrawString(m[i].ToString(), font, Brushes.Black, 0, y); 
+                    y = y + 13;
+                }
+
+                int[] Count1 = new int[7];
+                int[] Count2 = new int[7];                
+               
+                
+                Font font3 = new System.Drawing.Font("Arial", 10, FontStyle.Bold);
+                SolidBrush mybrush = new SolidBrush(Color.Red);
+              
+                PointF[] points1 = new PointF[listView2.Items.Count];
+                int k = 0;
+                for (int i = listView2.Items.Count - 1; i >= 0; i--)
+                {
+                    points1[k].X = (float)(36 + k * 8);                    
+                    points1[k].Y = (float)(170 - (jjjzArray[i] - min1) / tmp1 * 13 - 13);
+                    double intTmp = points1[k].Y;
+                    k++;
+                }
+                
+                g.DrawLines(mypen2, points1);
+
+
+                font3 = new System.Drawing.Font("Arial", 10, FontStyle.Bold);
+                mybrush = new SolidBrush(Color.Green);
+                mypen2 = new Pen(Color.Green,2);
+                k = 0;
+                for (int i = listView2.Items.Count - 1; i >= 0; i--)
+                {
+                    points1[k].X = (float)(36 + k * 8);
+                    points1[k].Y = (float)(170 - (ljjzArray[i] - min1) / tmp1 * 13 - 13);
+                    double intTmp = points1[k].Y;
+                    k++;
+                }
+                g.DrawLines(mypen2, points1);
+
+                  
+                g.FillRectangle(Brushes.Red, 162, 201, 20, 10);
+                g.DrawString("单位净值", font2, Brushes.Red, 181, 200);
+                g.FillRectangle(Brushes.Green, 162, 221, 20, 10);
+                g.DrawString("累计净值", font2, Brushes.Green, 181, 220);
+                
+                FileStream mm = new FileStream("c:\\aa.jpg", FileMode.Create);
+                image.Save(mm, ImageFormat.Jpeg);
+                mm.Close();
+            }
+            finally
+            {
+                g.Dispose();
+                image.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button2_Click(object sender, EventArgs e)
+        {
+            showProfit();
+            Download.getDownload().downloadProfitInfo();
+            showProfit();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void showProfit()
+        {
+            
+            listView1.Clear();
+            ListViewItem lvi = new ListViewItem();             
+        }
+    }
+}
