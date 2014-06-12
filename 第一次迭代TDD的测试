@@ -1,0 +1,227 @@
+using download;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using WIndows;
+using System.Windows.Forms;
+using WIndows.Properties;
+using System.Globalization;
+using System.Resources;
+using Algorithm;
+using System.IO;
+
+namespace TDD_Test
+{
+    
+    
+    /// <summary>
+    ///这是 clsTest 的测试类，旨在
+    ///包含所有 clsTest 单元测试
+    ///</summary>
+    [TestClass()]
+    public class clsTest
+    {
+
+
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///获取或设置测试上下文，上下文提供
+        ///有关当前测试运行及其功能的信息。
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
+        #region 附加测试特性
+        // 
+        //编写测试时，还可使用以下特性:
+        //
+        //使用 ClassInitialize 在运行类中的第一个测试前先运行代码
+        //[ClassInitialize()]
+        //public static void MyClassInitialize(TestContext testContext)
+        //{
+        //}
+        //
+        //使用 ClassCleanup 在运行完类中的所有测试后再运行代码
+        //[ClassCleanup()]
+        //public static void MyClassCleanup()
+        //{
+        //}
+        //
+        //使用 TestInitialize 在运行每个测试前先运行代码
+        //[TestInitialize()]
+        //public void MyTestInitialize()
+        //{
+        //}
+        //
+        //使用 TestCleanup 在运行完每个测试后运行代码
+        //[TestCleanup()]
+        //public void MyTestCleanup()
+        //{
+        //}
+        //
+        #endregion
+
+
+        /// <summary>
+        ///absDouble 的测试  //ignored
+        ///</summary>
+        [TestMethod()]
+        public void myTest44()
+        {
+            AlgorithmClass target = new AlgorithmClass(); // TODO: 初始化为适当的值
+            double d = 0F; // TODO: 初始化为适当的值
+            double expected = 0F; // TODO: 初始化为适当的值
+            double actual;
+            actual = target.absDouble(d);
+            Assert.AreEqual(expected, actual);
+            Assert.Inconclusive("验证此测试方法的正确性。");
+        }
+
+        /// <summary>
+        ///getMaxOfArray 的测试  //通过
+        ///</summary>
+        [TestMethod()]
+        public void myTest45()
+        {
+            AlgorithmClass target = new AlgorithmClass();
+            double[] a = { 1.0,2.0,3.0};
+            int len = 3;
+            double expected = 3.0;
+            double actual;
+            actual = target.getMaxOfArray(a, len);
+            Assert.AreEqual(expected, actual);
+        }
+
+        /// <summary>
+        ///getMinOfArray 的测试   //通过
+        ///</summary>
+        [TestMethod()]
+        public void myTest46()
+        {
+            AlgorithmClass target = new AlgorithmClass();
+            double[] a = { 1.0, 2.0, 3.0 };
+            int len = 3;
+            double expected = 1.0;
+            double actual;
+            actual = target.getMinOfArray(a, len);
+            Assert.AreEqual(expected, actual);
+        }
+
+        /// <summary>
+        ///makeString 的测试     //通过
+        ///</summary>
+        [TestMethod()]
+        public void myTest47()
+        {
+            AlgorithmClass target = new AlgorithmClass();
+            char ch = 'c';
+            int i = 3;
+            string expected = "ccc";
+            string actual;
+            actual = target.makeString(ch, i);
+            Assert.AreEqual(expected, actual);
+        }
+
+        
+
+        /// <summary>
+        ///RemoveHtmlTags 的测试  //通过
+        ///</summary>
+        [TestMethod()]
+        [DeploymentItem("download.dll")]
+        public void myTest1()
+        {
+            Download target = Download.getDownload();
+            string strHtml = "<html><title>title_name</title></html>"; 
+            string expected = "  title_name  "; 
+            string actual;
+            actual = target.RemoveHtmlTags(ref strHtml);
+            Assert.AreEqual(expected, actual);
+        }
+
+     
+
+        /// <summary>
+        ///downloadjjjz 的测试   //通过
+        ///</summary>
+        [TestMethod()]
+        public void myTest6()
+        {
+            Download target = Download.getDownload();
+            string jjjzURL = "http://data.cnfund.cn/FundData660005.html";
+            string jjjzFile = "C:\\data\\jjjz.txt";
+            target.downloadjjjz(jjjzURL, jjjzFile);
+            DirectoryInfo dirInfo = new DirectoryInfo("C:\\data");
+            FileInfo[] files = dirInfo.GetFiles();
+            foreach (FileInfo fileInfo in files)
+                if (fileInfo.Name.Equals("jjjz.txt"))
+                    return;
+
+            Assert.Inconclusive("无法验证不返回值的方法。");
+        }
+
+      
+        /// <summary>
+        ///getSpecifiedSource 的测试   //通过
+        ///</summary>
+       // [TestMethod()]
+        public void myTest10()
+        {
+            Download target = Download.getDownload();            
+            string begin = @"<div id=""code_content"" class=""m_b"">";
+            string end = @"<style>";
+            string actual;
+            actual = target.getSpecifiedSource(@"C:\data\fundCode.htm",
+                begin, end);
+            Assert.AreEqual(actual.Substring(0, begin.Length), begin);
+            Assert.AreEqual(actual.Substring(actual.Length - end.Length, end.Length), end);
+        }
+
+        /// <summary>
+        ///writeFundToFile 的测试  //通过
+        ///</summary>
+        [TestMethod()]
+        [DeploymentItem("download.dll")]
+        public void myTest11()
+        {
+            Download target = Download.getDownload();
+            string str = "test";
+            target.writeFundToFile(ref str, "C:\\test1.txt");
+            DirectoryInfo dirInfo = new DirectoryInfo("C:\\");
+            FileInfo[] files = dirInfo.GetFiles();
+            foreach (FileInfo fileInfo in files)
+                if (fileInfo.Name.Equals("test1.txt"))
+                    return;
+
+            Assert.Inconclusive("无法验证不返回值的方法。");
+        }
+
+        /// <summary>
+        ///writeToFile 的测试     //通过
+        ///</summary>
+        [TestMethod()]
+        [DeploymentItem("download.dll")]
+        public void myTest12()
+        {
+            Download target = Download.getDownload();
+            string str = "test";
+            target.writeToFile(ref str, "C:\\test2.txt");
+            DirectoryInfo dirInfo = new DirectoryInfo("C:\\");
+            FileInfo[] files = dirInfo.GetFiles();
+            foreach (FileInfo fileInfo in files)
+                if (fileInfo.Name.Equals("test2.txt"))
+                    return;
+
+            Assert.Inconclusive("无法验证不返回值的方法。");
+        }
+    }
+}
